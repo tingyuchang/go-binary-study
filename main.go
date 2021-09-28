@@ -86,12 +86,12 @@ func Delete(filename string, index, offset int64) error {
 	}
 	defer func() { _ = GoFunlock(fd, filename) }()
 
-	//
+	// cut data By copy & re-slice
 	data, _ := ioutil.ReadAll(file)
 	copy(data[index:], data[index+offset:])
 	data = data[:len(data)-int(offset)]
 
-	// 1. rename old .Dir
+	// 1. rename old .Dir to .Dir.tmp
 	err = os.Rename(filename, filename+".tmp")
 	if err != nil {
 		return err
@@ -110,6 +110,8 @@ func Delete(filename string, index, offset int64) error {
 
 	// 4. remove tmp
 	_ = os.Remove(filename+".tmp")
+
+	//TODO if error, recovery to original data
 
 	return nil
 }
